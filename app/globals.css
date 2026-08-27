@@ -19,6 +19,7 @@ html.dark .paper-grain::after { opacity:.12; filter:invert(1); }
 .route-pulse { animation:route-pulse 2.8s linear infinite; }
 @keyframes route-pulse { to { background-position:32px bottom; } }
 @keyframes result-in { from { transform:translateY(8px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+@keyframes stamp-in { 0% { transform:scale(.72) rotate(-10deg); opacity:0; } 70% { transform:scale(1.12) rotate(2deg); opacity:1; } 100% { transform:scale(1) rotate(0); opacity:1; } }
 .ledger-section { position:relative; }
 .ledger-section::before { position:absolute; inset:0 auto 0 clamp(1.1rem,3vw,3.2rem); width:1px; content:""; opacity:.62; background-image:linear-gradient(to bottom,var(--line) 42%,transparent 0%); background-size:1px 9px; background-repeat:repeat-y; pointer-events:none; }
 .ledger-section::after { position:absolute; top:3.9rem; left:calc(clamp(1.1rem,3vw,3.2rem) - 4px); width:9px; height:9px; border:1px solid var(--signal); border-radius:999px; background:var(--paper); content:""; pointer-events:none; }

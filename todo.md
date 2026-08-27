@@ -1,9 +1,9 @@
-# QR Code untuk Pendek
+# Pembaruan CAPTCHA dan Copy Link
 
-- [x] Tinjau komponen hasil shortlink dan pilihan pustaka QR code yang sesuai.
-- [x] Tambahkan generator QR code untuk URL pendek yang baru dibuat.
-- [x] Sediakan tombol unduh QR code sebagai PNG dengan nama file yang jelas.
-- [x] Tambahkan pengujian dan verifikasi tampilan desktop serta seluler.
-- [ ] Perbarui dokumentasi, commit, dan sinkronkan repositori GitHub.
-- [x] Ganti pembatasan in-memory dengan rate limiting terdistribusi yang siap untuk deployment multi-instance.
-- [x] Tambahkan konfigurasi environment dan test untuk perilaku rate limiting.
+- [x] Bandingkan Turnstile dan reCAPTCHA untuk proteksi form pembuatan link.
+- [x] Tambahkan widget CAPTCHA pada form dan verifikasi token di endpoint server.
+- [x] Tambahkan konfigurasi environment tanpa menyimpan rahasia pada repositori.
+- [ ] Konfigurasikan site key dan secret key Google reCAPTCHA untuk alur pembuatan link di deployment.
+- [x] Perbarui tombol salin link dengan animasi status berhasil dan aksesibilitas yang baik.
+- [x] Tambahkan test validasi CAPTCHA serta pemeriksaan pengalaman pengguna.
+- [x] Perbarui dokumentasi, commit, dan sinkronkan repositori GitHub.

@@ -12,6 +12,7 @@ Pendek adalah website pemendek URL full-stack untuk portfolio **Abia Nugrahanto*
 | Kode pendek | `nanoid` dengan alfabet aman, enam karakter secara default |
 | QR code | QR PNG 512 × 512 px yang dibuat di browser dan dapat langsung diunduh |
 | Proteksi API | Sliding-window rate limit Redis Upstash per alamat IP, dengan fallback lokal untuk development |
+| Anti-spam form | Google reCAPTCHA checkbox, diverifikasi server-side sebelum link dapat disimpan |
 | Deployment | Vercel, Render via Docker, atau Docker mandiri |
 
 ## Fitur
@@ -21,6 +22,8 @@ Pendek memvalidasi URL tujuan agar hanya protokol `http` dan `https` yang diteri
 Setiap request ke `/{shortCode}` memuat link dari PostgreSQL, meningkatkan `clicks` secara atomik, mengisi `lastVisitedAt`, lalu menjalankan redirect sementara. Catatan publik tersedia pada `/insight/{shortCode}` dan data JSON tersedia melalui `GET /api/links/{shortCode}`. Sesudah link dibuat, Pendek menghasilkan QR code PNG berukuran 512 × 512 px di browser dan menyediakan tombol unduh dengan nama `pendek-{kode}-qr.png`.[4]
 
 Pembuatan link melalui `POST /api/links` dilindungi oleh sliding-window limit sebanyak **12 request per IP per 60 detik** menggunakan Redis HTTP Upstash. Respons memuat header `X-RateLimit-Limit`, `X-RateLimit-Remaining`, dan `X-RateLimit-Reset`; respons yang diblokir memakai status `429` serta `Retry-After`. Apabila konfigurasi atau koneksi Redis tidak tersedia, aplikasi mempertahankan ketersediaan dengan fallback in-memory khusus development yang tidak boleh dijadikan perlindungan utama untuk deployment multi-instance.[5]
+
+Form pembuatan link memakai Google reCAPTCHA checkbox. Tombol submit baru aktif setelah token tersedia, lalu endpoint memverifikasi token tersebut secara server-side terhadap Siteverify sebelum data masuk ke PostgreSQL. Token yang kedaluwarsa, pernah dipakai, atau tidak valid akan ditolak. Sesudah link tersedia, tombol **Copy to Clipboard** berubah menjadi status **Tersalin!** dengan animasi stempel singkat sebagai umpan balik.[6]
 
 ## Menjalankan secara lokal
 
@@ -34,6 +37,8 @@ DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/p
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 UPSTASH_REDIS_REST_URL="https://[INSTANCE].upstash.io"
 UPSTASH_REDIS_REST_TOKEN="[UPSTASH_REDIS_REST_TOKEN]"
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY="[GOOGLE_RECAPTCHA_SITE_KEY]"
+RECAPTCHA_SECRET_KEY="[GOOGLE_RECAPTCHA_SECRET_KEY]"
 ```
 
 Kemudian instal dan jalankan aplikasi.
@@ -83,11 +88,12 @@ Link
 ```json
 {
   "originalUrl": "https://example.com/article/very-long-path",
-  "customCode": "artikel"
+  "customCode": "artikel",
+  "recaptchaToken": "token-dari-widget-Google"
 }
 ```
 
-Nilai `customCode` opsional. Jika dihilangkan, Pendek membuat kode unik enam karakter. Response sukses menggunakan status `201` dan memuat `shortUrl`, `shortCode`, `originalUrl`, `clicks`, dan `createdAt`.
+Nilai `customCode` opsional. `recaptchaToken` wajib dan hanya berlaku sekali. Jika `customCode` dihilangkan, Pendek membuat kode unik enam karakter. Response sukses menggunakan status `201` dan memuat `shortUrl`, `shortCode`, `originalUrl`, `clicks`, dan `createdAt`.
 
 ### Membaca catatan tautan
 
@@ -97,11 +103,11 @@ Nilai `customCode` opsional. Jika dihilangkan, Pendek membuat kode unik enam kar
 
 ### Vercel
 
-Impor repositori ini di Vercel. Tambahkan `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_APP_URL`, `UPSTASH_REDIS_REST_URL`, dan `UPSTASH_REDIS_REST_TOKEN` pada **Project Settings → Environment Variables**. Gunakan connection pooling Supabase untuk `DATABASE_URL`, lalu jalankan `pnpm db:deploy` sekali terhadap production database sebelum atau melalui proses rilis pertama. Build command sudah ditentukan oleh script `pnpm build`.
+Impor repositori ini di Vercel. Tambahkan `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_APP_URL`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, dan `RECAPTCHA_SECRET_KEY` pada **Project Settings → Environment Variables**. Daftarkan domain development/production pada konsol Google reCAPTCHA, lalu gunakan connection pooling Supabase untuk `DATABASE_URL` dan jalankan `pnpm db:deploy` sekali terhadap production database sebelum atau melalui proses rilis pertama. Build command sudah ditentukan oleh script `pnpm build`.
 
 ### Render
 
-Repositori menyertakan `render.yaml` dan `Dockerfile`. Buat Blueprint atau Web Service dari repositori, lalu isi seluruh lima environment variable rahasia di dashboard Render. Container otomatis menjalankan `prisma migrate deploy` sebelum `next start`. Setel `NEXT_PUBLIC_APP_URL` ke domain publik Render setelah layanan aktif.
+Repositori menyertakan `render.yaml` dan `Dockerfile`. Buat Blueprint atau Web Service dari repositori, lalu isi seluruh tujuh environment variable pada dashboard Render. Container otomatis menjalankan `prisma migrate deploy` sebelum `next start`. Setel `NEXT_PUBLIC_APP_URL` ke domain publik Render setelah layanan aktif dan masukkan domain tersebut ke konfigurasi reCAPTCHA.
 
 ### Docker
 
@@ -124,18 +130,19 @@ pnpm test
 pnpm build
 ```
 
-Pengujian unit memverifikasi format dan normalisasi kode pendek, menolak protokol berbahaya/non-web, membuat QR PNG valid, serta membatasi request fallback per identitas. Uji integrasi manual direkomendasikan setelah `DATABASE_URL` tersedia: buat link, unduh dan pindai QR code, buka short URL, lalu pastikan `clicks` dan `lastVisitedAt` berubah pada halaman insight.
+Pengujian unit memverifikasi format dan normalisasi kode pendek, menolak protokol berbahaya/non-web, membuat QR PNG valid, membatasi request fallback per identitas, serta menerima/menolak hasil verifikasi reCAPTCHA. Uji integrasi manual direkomendasikan setelah seluruh environment tersedia: selesaikan CAPTCHA, buat link, gunakan **Copy to Clipboard**, unduh dan pindai QR code, buka short URL, lalu pastikan `clicks` dan `lastVisitedAt` berubah pada halaman insight.
 
 ## Catatan keamanan
 
-Aplikasi tidak melakukan server-side fetch ke URL tujuan, sehingga proses pemendekan tidak mengeksekusi alamat yang dikirim pengguna. Validasi hanya mengizinkan URL `http(s)`, payload dibatasi melalui schema Zod, kode sistem dilindungi, alias di-backup oleh unique constraint PostgreSQL, header `X-Powered-By` dimatikan, dan `POST /api/links` memakai counter Redis yang dibagikan lintas instance. Karena produk shortlink berpotensi disalahgunakan, tambahkan CAPTCHA, allow/block list, laporan abuse, serta kebijakan rate limit terpisah bagi pengguna terautentikasi jika kebutuhan produk berkembang.
+Aplikasi tidak melakukan server-side fetch ke URL tujuan, sehingga proses pemendekan tidak mengeksekusi alamat yang dikirim pengguna. Validasi hanya mengizinkan URL `http(s)`, payload dibatasi melalui schema Zod, kode sistem dilindungi, alias di-backup oleh unique constraint PostgreSQL, header `X-Powered-By` dimatikan, dan `POST /api/links` memakai counter Redis lintas instance serta verifikasi reCAPTCHA server-side. Secret key reCAPTCHA tidak pernah dikirim ke browser. Karena produk shortlink berpotensi disalahgunakan, tambahkan allow/block list, laporan abuse, serta kebijakan rate limit terpisah bagi pengguna terautentikasi jika kebutuhan produk berkembang.
 
 ## Referensi
 
-Implementasi dynamic segment menggunakan pola App Router dan parameter asinkron Next.js.[1] Redirect server menggunakan fungsi `redirect()` dengan respons redirect sementara secara default.[2] Data model dipusatkan dalam Prisma schema dengan unique constraint dan indeks untuk menjaga integritas serta performa pencarian.[3] QR generator menghasilkan data URI gambar PNG yang dapat digunakan langsung sebagai file unduhan.[4] Redis Upstash membaca URL/token dari environment dan mendukung pola sliding-window untuk pembatasan endpoint.[5]
+Implementasi dynamic segment menggunakan pola App Router dan parameter asinkron Next.js.[1] Redirect server menggunakan fungsi `redirect()` dengan respons redirect sementara secara default.[2] Data model dipusatkan dalam Prisma schema dengan unique constraint dan indeks untuk menjaga integritas serta performa pencarian.[3] QR generator menghasilkan data URI gambar PNG yang dapat digunakan langsung sebagai file unduhan.[4] Redis Upstash membaca URL/token dari environment dan mendukung pola sliding-window untuk pembatasan endpoint.[5] reCAPTCHA mengharuskan token dari widget diverifikasi server-side, bersifat sekali pakai, dan memiliki masa berlaku singkat.[6]
 
 [1]: https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes "Next.js — Dynamic Route Segments"
 [2]: https://nextjs.org/docs/app/api-reference/functions/redirect "Next.js — redirect"
 [3]: https://www.prisma.io/docs/orm/prisma-schema/overview "Prisma — Schema Overview"
 [4]: https://www.npmjs.com/package/qrcode "qrcode — npm package documentation"
 [5]: https://upstash.com/docs/redis/sdks/ratelimit-ts/gettingstarted "Upstash Ratelimit — Getting Started"
+[6]: https://developers.google.com/recaptcha/docs/verify "Google reCAPTCHA — Verifying the user’s response"
