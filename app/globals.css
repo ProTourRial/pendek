@@ -1,0 +1,26 @@
+/* Signal Ledger: paper-and-ink editorial utility, asymmetric rails, precise tangerine actions. */
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+:root { --paper:#f4f0e8; --paper-deep:#e9e2d5; --ink:#173a34; --ink-soft:#48645c; --line:rgba(23,58,52,.16); --signal:#f06a35; --signal-soft:#ffded1; --sage:#c9d9ce; --canvas:#fbf9f4; }
+html.dark { --paper:#132822; --paper-deep:#1c3630; --ink:#f6f0e5; --ink-soft:#c2d1c8; --line:rgba(246,240,229,.16); --signal:#ff8354; --signal-soft:#4e2c20; --sage:#365b50; --canvas:#0d1d19; }
+* { border-color:var(--line); }
+html { background:var(--canvas); scroll-behavior:smooth; }
+body { background:var(--canvas); color:var(--ink); font-family:"Manrope",ui-sans-serif,system-ui,sans-serif; transition:background-color 180ms cubic-bezier(.23,1,.32,1),color 180ms cubic-bezier(.23,1,.32,1); }
+::selection { background:var(--signal); color:#fffaf4; }
+button,a,input { -webkit-tap-highlight-color:transparent; }
+button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid color-mix(in srgb,var(--signal),transparent 50%); outline-offset:3px; }
+.font-mono-brand { font-family:"DM Mono",ui-monospace,monospace; }
+.font-display { font-family:"DM Serif Display",Georgia,serif; }
+.paper-grain { position:relative; isolation:isolate; }
+.paper-grain::after { position:absolute; z-index:-1; inset:0; pointer-events:none; content:""; opacity:.34; background-image:radial-gradient(rgba(23,58,52,.18) .6px,transparent .7px); background-size:5px 5px; mix-blend-mode:multiply; }
+html.dark .paper-grain::after { opacity:.12; filter:invert(1); }
+.routing-line { background-image:linear-gradient(to right,var(--ink) 38%,transparent 0%); background-position:bottom; background-size:8px 1px; background-repeat:repeat-x; }
+.route-pulse { animation:route-pulse 2.8s linear infinite; }
+@keyframes route-pulse { to { background-position:32px bottom; } }
+@keyframes result-in { from { transform:translateY(8px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.ledger-section { position:relative; }
+.ledger-section::before { position:absolute; inset:0 auto 0 clamp(1.1rem,3vw,3.2rem); width:1px; content:""; opacity:.62; background-image:linear-gradient(to bottom,var(--line) 42%,transparent 0%); background-size:1px 9px; background-repeat:repeat-y; pointer-events:none; }
+.ledger-section::after { position:absolute; top:3.9rem; left:calc(clamp(1.1rem,3vw,3.2rem) - 4px); width:9px; height:9px; border:1px solid var(--signal); border-radius:999px; background:var(--paper); content:""; pointer-events:none; }
+html.dark .ledger-section::after { background:var(--paper); }
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }

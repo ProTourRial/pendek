@@ -1,0 +1,3 @@
+import { createShortCode, isPermittedShortCode, normalizeShortCode, SHORT_CODE_LENGTH } from "@/lib/short-code";
+import { describe, expect, it } from "vitest";
+describe("short-code",()=>{ it("creates compact six-character IDs from the allowed alphabet",()=>{ const code=createShortCode(); expect(code).toHaveLength(SHORT_CODE_LENGTH); expect(code).toMatch(/^[23456789abcdefghjkmnpqrstuvwxyz]{6}$/); }); it("normalizes aliases and rejects reserved or malformed paths",()=>{ expect(normalizeShortCode("  Promo-2026 ")).toBe("promo-2026"); expect(isPermittedShortCode("promo-2026")).toBe(true); expect(isPermittedShortCode("api")).toBe(false); expect(isPermittedShortCode("two words")).toBe(false); expect(isPermittedShortCode("ab")).toBe(false); }); });
