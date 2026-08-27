@@ -106,7 +106,7 @@ Nilai `customCode` opsional. `recaptchaToken` wajib dan hanya berlaku sekali. Ji
 
 ### Vercel
 
-Impor repositori ini di Vercel. Tambahkan `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_APP_URL`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, dan `RECAPTCHA_SECRET_KEY` pada **Project Settings → Environment Variables**. Daftarkan domain development/production pada konsol Google reCAPTCHA, lalu gunakan connection pooling Supabase untuk `DATABASE_URL` dan jalankan `pnpm db:deploy` sekali terhadap production database sebelum atau melalui proses rilis pertama. Build command sudah ditentukan oleh script `pnpm build`.
+Impor repositori ini di Vercel dengan framework **Next.js**. Template tanpa kredensial tersedia pada [`.env.vercel.example`](.env.vercel.example), sedangkan pembagian target Preview/Production dan urutan aktivasi dijelaskan pada [panduan environment Vercel](docs/vercel-environment.md). Gunakan URL pooler Supabase sebagai `DATABASE_URL`, jalankan `pnpm db:deploy` satu kali secara terpisah sebelum production release pertama, dan daftarkan hostname deployment pada konsol Google reCAPTCHA.
 
 ### Render
 
