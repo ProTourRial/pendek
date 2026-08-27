@@ -1,9 +1,9 @@
-# Pembaruan CAPTCHA dan Copy Link
+# Riwayat Lokal dan QR Kustom
 
-- [x] Bandingkan Turnstile dan reCAPTCHA untuk proteksi form pembuatan link.
-- [x] Tambahkan widget CAPTCHA pada form dan verifikasi token di endpoint server.
-- [x] Tambahkan konfigurasi environment tanpa menyimpan rahasia pada repositori.
-- [ ] Konfigurasikan site key dan secret key Google reCAPTCHA untuk alur pembuatan link di deployment.
-- [x] Perbarui tombol salin link dengan animasi status berhasil dan aksesibilitas yang baik.
-- [x] Tambahkan test validasi CAPTCHA serta pemeriksaan pengalaman pengguna.
-- [x] Perbarui dokumentasi, commit, dan sinkronkan repositori GitHub.
+- [x] Tinjau hasil shortlink serta komponen QR code yang aktif.
+- [x] Simpan riwayat link baru dalam local storage dengan batas data dan tindakan hapus.
+- [x] Tampilkan riwayat sesi yang dapat dibuka, disalin, dan dihapus secara lokal.
+- [x] Tampilkan status submit selama CAPTCHA dan pembuatan link sedang diproses.
+- [x] Tambahkan pilihan warna QR dan unggahan logo lokal untuk area tengah QR.
+- [x] Pastikan QR hasil kustom dapat diunduh sebagai PNG serta tetap mudah dipindai.
+- [x] Tambahkan pengujian, pembaruan dokumentasi, commit, dan sinkronisasi GitHub.

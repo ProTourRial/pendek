@@ -10,7 +10,8 @@ Pendek adalah website pemendek URL full-stack untuk portfolio **Abia Nugrahanto*
 | Antarmuka | Tailwind CSS, dark/light mode, react-hot-toast, lucide-react |
 | Data | PostgreSQL Supabase melalui Prisma ORM |
 | Kode pendek | `nanoid` dengan alfabet aman, enam karakter secara default |
-| QR code | QR PNG 512 × 512 px yang dibuat di browser dan dapat langsung diunduh |
+| QR code | QR PNG 1024 × 1024 px dengan warna dan logo tengah opsional, dibuat serta diunduh langsung di browser |
+| Riwayat sesi | Maksimum delapan link terbaru tersimpan hanya pada local storage browser pengguna |
 | Proteksi API | Sliding-window rate limit Redis Upstash per alamat IP, dengan fallback lokal untuk development |
 | Anti-spam form | Google reCAPTCHA checkbox, diverifikasi server-side sebelum link dapat disimpan |
 | Deployment | Vercel, Render via Docker, atau Docker mandiri |
@@ -19,11 +20,13 @@ Pendek adalah website pemendek URL full-stack untuk portfolio **Abia Nugrahanto*
 
 Pendek memvalidasi URL tujuan agar hanya protokol `http` dan `https` yang diterima. Kode otomatis terdiri dari enam karakter aman dibaca; pengguna dapat memilih alias 3–32 karakter jika belum dipakai. Rute sistem seperti `api` dan `insight` tidak dapat dipakai sebagai alias. Kolom `shortCode` memiliki unique constraint sehingga duplikasi dicegah juga pada lapisan database.
 
-Setiap request ke `/{shortCode}` memuat link dari PostgreSQL, meningkatkan `clicks` secara atomik, mengisi `lastVisitedAt`, lalu menjalankan redirect sementara. Catatan publik tersedia pada `/insight/{shortCode}` dan data JSON tersedia melalui `GET /api/links/{shortCode}`. Sesudah link dibuat, Pendek menghasilkan QR code PNG berukuran 512 × 512 px di browser dan menyediakan tombol unduh dengan nama `pendek-{kode}-qr.png`.[4]
+Setiap request ke `/{shortCode}` memuat link dari PostgreSQL, meningkatkan `clicks` secara atomik, mengisi `lastVisitedAt`, lalu menjalankan redirect sementara. Catatan publik tersedia pada `/insight/{shortCode}` dan data JSON tersedia melalui `GET /api/links/{shortCode}`. Sesudah link dibuat, Pendek menyimpan maksimal delapan tautan terbaru secara lokal pada browser pengguna. Riwayat ini tidak dikirim ke server dan dapat dibuka, disalin, atau dibersihkan kapan saja.
+
+QR code dibuat sebagai PNG 1024 × 1024 px langsung di browser dan dapat diberi warna khusus serta logo lokal di tengah sebelum diunduh sebagai `pendek-{kode}-qr.png`. Logo tidak diunggah atau disimpan di server. Aplikasi memakai tingkat koreksi kesalahan tertinggi serta area latar di tengah untuk membantu QR tetap mudah dipindai setelah personalisasi.[4]
 
 Pembuatan link melalui `POST /api/links` dilindungi oleh sliding-window limit sebanyak **12 request per IP per 60 detik** menggunakan Redis HTTP Upstash. Respons memuat header `X-RateLimit-Limit`, `X-RateLimit-Remaining`, dan `X-RateLimit-Reset`; respons yang diblokir memakai status `429` serta `Retry-After`. Apabila konfigurasi atau koneksi Redis tidak tersedia, aplikasi mempertahankan ketersediaan dengan fallback in-memory khusus development yang tidak boleh dijadikan perlindungan utama untuk deployment multi-instance.[5]
 
-Form pembuatan link memakai Google reCAPTCHA checkbox. Tombol submit baru aktif setelah token tersedia, lalu endpoint memverifikasi token tersebut secara server-side terhadap Siteverify sebelum data masuk ke PostgreSQL. Token yang kedaluwarsa, pernah dipakai, atau tidak valid akan ditolak. Sesudah link tersedia, tombol **Copy to Clipboard** berubah menjadi status **Tersalin!** dengan animasi stempel singkat sebagai umpan balik.[6]
+Form pembuatan link memakai Google reCAPTCHA checkbox. Tombol submit baru aktif setelah token tersedia, lalu endpoint memverifikasi token tersebut secara server-side terhadap Siteverify sebelum data masuk ke PostgreSQL. Saat verifikasi dan penyimpanan berlangsung, tombol menunjukkan spinner serta status proses yang dapat dibaca pembaca layar. Token yang kedaluwarsa, pernah dipakai, atau tidak valid akan ditolak. Sesudah link tersedia, tombol **Copy to Clipboard** berubah menjadi status **Tersalin!** dengan animasi stempel singkat sebagai umpan balik.[6]
 
 ## Menjalankan secara lokal
 
@@ -60,7 +63,7 @@ Aplikasi akan tersedia di `http://localhost:3000`.
 | `pnpm build` | Menghasilkan Prisma Client dan build produksi. |
 | `pnpm check` | Memeriksa tipe TypeScript tanpa membuat output. |
 | `pnpm lint` | Memeriksa kualitas kode dengan ESLint. |
-| `pnpm test` | Menjalankan unit test validasi URL, kode pendek, QR PNG, dan fallback rate limiter. |
+| `pnpm test` | Menjalankan unit test validasi URL, kode pendek, QR PNG, riwayat lokal, reCAPTCHA, dan fallback rate limiter. |
 | `pnpm db:deploy` | Menjalankan migrasi Prisma yang sudah ada ke database target. |
 | `pnpm db:migrate` | Membuat dan menjalankan migrasi baru saat pengembangan. |
 
@@ -130,7 +133,7 @@ pnpm test
 pnpm build
 ```
 
-Pengujian unit memverifikasi format dan normalisasi kode pendek, menolak protokol berbahaya/non-web, membuat QR PNG valid, membatasi request fallback per identitas, serta menerima/menolak hasil verifikasi reCAPTCHA. Uji integrasi manual direkomendasikan setelah seluruh environment tersedia: selesaikan CAPTCHA, buat link, gunakan **Copy to Clipboard**, unduh dan pindai QR code, buka short URL, lalu pastikan `clicks` dan `lastVisitedAt` berubah pada halaman insight.
+Pengujian unit memverifikasi format dan normalisasi kode pendek, menolak protokol berbahaya/non-web, membuat QR PNG valid, membatasi request fallback per identitas, menerima/menolak hasil verifikasi reCAPTCHA, serta mengelola riwayat lokal yang rusak, duplikat, dan dibatasi. Uji integrasi manual direkomendasikan setelah seluruh environment tersedia: selesaikan CAPTCHA, buat link, gunakan **Copy to Clipboard**, coba warna dan logo QR, unduh serta pindai QR code, buka short URL, lalu pastikan `clicks` dan `lastVisitedAt` berubah pada halaman insight.
 
 ## Catatan keamanan
 
