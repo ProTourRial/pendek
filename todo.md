@@ -1,6 +1,6 @@
-# Konfigurasi Environment Vercel
+# Penghapusan Riwayat Lokal
 
-- [x] Audit variabel environment yang dibutuhkan oleh Prisma, Upstash, dan reCAPTCHA.
-- [x] Buat template aman untuk Preview dan Production tanpa secret nyata.
-- [x] Perbarui dokumentasi deployment dan langkah konfigurasi Vercel.
-- [x] Verifikasi konsistensi nama environment dengan kode aplikasi.
+- [x] Tinjau komponen daftar riwayat dan kontrak data local storage.
+- [x] Tambahkan aksi hapus individual yang hanya mengubah riwayat pada browser.
+- [x] Tambahkan umpan balik, aksesibilitas, dan test untuk penghapusan link.
+- [x] Perbarui dokumentasi serta sinkronkan perubahan ke GitHub.

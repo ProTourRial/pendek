@@ -27,3 +27,7 @@ export function readRecentLinks(serialized: string | null): RecentLink[] {
 export function prependRecentLink(history: RecentLink[], item: RecentLink): RecentLink[] {
   return [item, ...history.filter((entry) => entry.shortCode !== item.shortCode)].slice(0, MAX_RECENT_LINKS);
 }
+
+export function removeRecentLink(history: RecentLink[], shortCode: string): RecentLink[] {
+  return history.filter((entry) => entry.shortCode !== shortCode);
+}

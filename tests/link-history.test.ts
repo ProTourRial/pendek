@@ -1,4 +1,4 @@
-import { MAX_RECENT_LINKS, prependRecentLink, readRecentLinks, type RecentLink } from "@/lib/link-history";
+import { MAX_RECENT_LINKS, prependRecentLink, readRecentLinks, removeRecentLink, type RecentLink } from "@/lib/link-history";
 import { describe, expect, it } from "vitest";
 
 const sample = (shortCode: string): RecentLink => ({ shortCode, shortUrl: `https://pendek.test/${shortCode}`, originalUrl: `https://example.com/${shortCode}`, createdAt: "2026-08-27T00:00:00.000Z" });
@@ -18,5 +18,9 @@ describe("local link history", () => {
     expect(deduplicated[0].shortCode).toBe("code-4");
     expect(extended).toHaveLength(MAX_RECENT_LINKS);
     expect(extended[0].shortCode).toBe("new-code");
+  });
+
+  it("removes only the chosen link from the local ledger", () => {
+    expect(removeRecentLink([sample("keep"), sample("remove"), sample("also-keep")], "remove").map((item) => item.shortCode)).toEqual(["keep", "also-keep"]);
   });
 });

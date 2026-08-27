@@ -20,7 +20,7 @@ Pendek adalah website pemendek URL full-stack untuk portfolio **Abia Nugrahanto*
 
 Pendek memvalidasi URL tujuan agar hanya protokol `http` dan `https` yang diterima. Kode otomatis terdiri dari enam karakter aman dibaca; pengguna dapat memilih alias 3–32 karakter jika belum dipakai. Rute sistem seperti `api` dan `insight` tidak dapat dipakai sebagai alias. Kolom `shortCode` memiliki unique constraint sehingga duplikasi dicegah juga pada lapisan database.
 
-Setiap request ke `/{shortCode}` memuat link dari PostgreSQL, meningkatkan `clicks` secara atomik, mengisi `lastVisitedAt`, lalu menjalankan redirect sementara. Catatan publik tersedia pada `/insight/{shortCode}` dan data JSON tersedia melalui `GET /api/links/{shortCode}`. Sesudah link dibuat, Pendek menyimpan maksimal delapan tautan terbaru secara lokal pada browser pengguna. Riwayat ini tidak dikirim ke server dan dapat dibuka, disalin, atau dibersihkan kapan saja.
+Setiap request ke `/{shortCode}` memuat link dari PostgreSQL, meningkatkan `clicks` secara atomik, mengisi `lastVisitedAt`, lalu menjalankan redirect sementara. Catatan publik tersedia pada `/insight/{shortCode}` dan data JSON tersedia melalui `GET /api/links/{shortCode}`. Sesudah link dibuat, Pendek menyimpan maksimal delapan tautan terbaru secara lokal pada browser pengguna. Riwayat ini tidak dikirim ke server dan setiap entri dapat dibuka, disalin, dihapus sendiri, atau dibersihkan seluruhnya kapan saja. Menghapus entri hanya mengubah local storage—shortlink pada database tetap aktif.
 
 QR code dibuat sebagai PNG 1024 × 1024 px langsung di browser dan dapat diberi warna khusus serta logo lokal di tengah sebelum diunduh sebagai `pendek-{kode}-qr.png`. Logo tidak diunggah atau disimpan di server. Aplikasi memakai tingkat koreksi kesalahan tertinggi serta area latar di tengah untuk membantu QR tetap mudah dipindai setelah personalisasi.[4]
 
@@ -133,7 +133,7 @@ pnpm test
 pnpm build
 ```
 
-Pengujian unit memverifikasi format dan normalisasi kode pendek, menolak protokol berbahaya/non-web, membuat QR PNG valid, membatasi request fallback per identitas, menerima/menolak hasil verifikasi reCAPTCHA, serta mengelola riwayat lokal yang rusak, duplikat, dan dibatasi. Uji integrasi manual direkomendasikan setelah seluruh environment tersedia: selesaikan CAPTCHA, buat link, gunakan **Copy to Clipboard**, coba warna dan logo QR, unduh serta pindai QR code, buka short URL, lalu pastikan `clicks` dan `lastVisitedAt` berubah pada halaman insight.
+Pengujian unit memverifikasi format dan normalisasi kode pendek, menolak protokol berbahaya/non-web, membuat QR PNG valid, membatasi request fallback per identitas, menerima/menolak hasil verifikasi reCAPTCHA, serta mengelola riwayat lokal yang rusak, duplikat, dibatasi, dan dihapus per entri. Uji integrasi manual direkomendasikan setelah seluruh environment tersedia: selesaikan CAPTCHA, buat link, gunakan **Copy to Clipboard**, hapus satu entri dari riwayat, coba warna dan logo QR, unduh serta pindai QR code, buka short URL, lalu pastikan `clicks` dan `lastVisitedAt` berubah pada halaman insight.
 
 ## Catatan keamanan
 
